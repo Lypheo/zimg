@@ -88,14 +88,12 @@ constexpr bool is_valid_lms(const ColorspaceDefinition &csp)
 constexpr bool is_valid_csp(const ColorspaceDefinition &csp)
 {
 	// 1. Require matrix to be set if transfer is set.
-	// 2. Require transfer to be set if primaries is set.
-	// 3. Check requirements for Rec.2020 CL.
-	// 4. Check requirements for chromaticity-derived NCL matrix.
-	// 5. Check requirements for chromaticity-derived CL matrix.
-	// 6. Check requirements for Rec.2100 ICtCp.
-	// 7. Check requirements for Rec.2100 LMS.
+	// 2. Check requirements for Rec.2020 CL.
+	// 3. Check requirements for chromaticity-derived NCL matrix.
+	// 4. Check requirements for chromaticity-derived CL matrix.
+	// 5. Check requirements for Rec.2100 ICtCp.
+	// 6. Check requirements for Rec.2100 LMS.
 	return !(csp.matrix == MatrixCoefficients::UNSPECIFIED && csp.transfer != TransferCharacteristics::UNSPECIFIED) &&
-		!(csp.transfer == TransferCharacteristics::UNSPECIFIED && csp.primaries != ColorPrimaries::UNSPECIFIED) &&
 		!(csp.matrix == MatrixCoefficients::REC_2020_CL && !is_valid_2020cl(csp)) &&
 		!(csp.matrix == MatrixCoefficients::CHROMATICITY_DERIVED_NCL && csp.primaries == ColorPrimaries::UNSPECIFIED) &&
 		!(csp.matrix == MatrixCoefficients::CHROMATICITY_DERIVED_CL && csp.primaries == ColorPrimaries::UNSPECIFIED) &&
@@ -202,7 +200,8 @@ std::vector<ColorspaceNode> get_neighboring_colorspaces(const ColorspaceDefiniti
 
 std::vector<OperationFactory> get_operation_path(const ColorspaceDefinition &in, const ColorspaceDefinition &out)
 {
-	if (!is_valid_csp(in) || !is_valid_csp(out))
+	if (!is_valid_csp(in) || !is_valid_csp(out) ||
+		(in.primaries != out.primaries  && in.transfer == TransferCharacteristics::UNSPECIFIED))
 		error::throw_<error::NoColorspaceConversion>("invalid colorspace definition");
 
 	std::vector<OperationFactory> path;
